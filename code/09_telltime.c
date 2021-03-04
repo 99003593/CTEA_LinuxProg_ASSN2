@@ -24,13 +24,15 @@ int main(int argc, const char **argv)
     int sig;
     sigset_t set;
     // time Variables
-    time_t rawtime;
+    struct timeval timer_usec;
     struct tm *t = NULL;
     char buff[64] = { 0 };
+    char buff_dt[32] = { 0 };
+    char buff_tz[16] = { 0 };
 
-    // Create time interval of .1 second
+    // Create time interval of 1 millisecond
     nval.it_interval.tv_sec = 0;
-    nval.it_interval.tv_nsec = 100000000;
+    nval.it_interval.tv_nsec = 1000000;
     nval.it_value.tv_sec = 0;
     nval.it_value.tv_nsec = 1;
 
@@ -56,10 +58,12 @@ int main(int argc, const char **argv)
         // Block until SIGALRM is recieved
         sigwait(&set, &sig);
         // Get time
-        time(&rawtime);
-        t = localtime(&rawtime);
+        gettimeofday(&timer_usec, NULL);
+        t = localtime(&timer_usec.tv_sec);
         // Format time
-        ret = strftime(buff, 64, "\r%d/%m/%Y %I:%M:%S %p %Z", t);
+        ret = strftime(buff_dt, 32, "%d/%m/%Y %I:%M:%S", t);
+        ret = strftime(buff_tz, 16, "%p %Z", t);
+        ret = snprintf(buff, 64, "\r%s.%02ld %s", buff_dt, timer_usec.tv_usec/10000, buff_tz);
         // Write time unbuffered to the output
         write(STDOUT_FILENO, buff, ret);
     }
