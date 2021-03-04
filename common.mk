@@ -30,7 +30,7 @@ endif
 all: $(OBJ)
 
 run: $(OBJ)
-	$(Q)./$(OBJ)
+	$(Q)$(OBJ)
 
 # Cleanup by removing object dir
 clean:
